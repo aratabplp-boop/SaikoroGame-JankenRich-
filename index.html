@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サイコロギャンブルバトル</title>
+  <link href="https://fonts.googleapis.com/css?family=Noto+Sans+JP" rel="stylesheet" />
+  <link rel="stylesheet" href="css/janken.css">
+
+</head>
+
+<body>
+ <div class="container">
+ <main>
+ <!-- タイトルとロゴ -->
+  <header class="title_section">
+    サイコロギャンブルバトル
+    <!-- 後でロゴ画像入れる -->
+  </header>
+
+  <!-- スクロールメッセージ -->
+  <div class="scroll_message">
+    <span class="scroll_text">倍率ドン！からのサイコロ勝負！2連勝したら総取り！</span>
+  </div>
+ </main>
+ <!-- mainここまでで良い？ -->
+
+
+ 
+
+<!-- ギャンブルボタン -->
+ <section class="gamble">
+  <div class="gambleexplain">
+    <span>ギャンブルボタンを押して倍率ドン！</span>
+   <div class="gamblebutton">
+    <button id="Gbutton">ギャンブルボタン</button>
+   </div> 
+  
+   <div id="Gbutton_result">
+   <span>今回の倍率は:?</span>
+   </div>
+
+</div>
+ </section>
+
+ <!-- サイコロボタン -->
+ <section class="dicebutton">
+ <div class="dicebutton ">
+    <button id="dice">サイコロを振る</button>
+  </div>
+ </section>
+
+ <!-- 10回限定　勝負の残り回数表示 -->
+ <section class="times_display">
+  <div id="remainingTurns">
+  残り勝負回数:10
+  </div>
+ </section>
+
+
+<div class="players">
+ <!-- プレイヤーゾーン -->
+ <section class="players">
+
+ <div class="player" id="user">
+ <h2>あなた</h2>
+ <img src="images/User.png" alt="あなたの写真" class="user_image">
+ <div class="dice" id="user_dice">1</div>
+ <!-- <img class="dice_img" src="" alt="userのサイコロ"> -->
+ <div id="userpoints">0ポイント</div>
+ </div>
+
+ <div class="player" id="Jack">
+ <h2>Jack</h2>
+ <img src="images/Jack.png" alt="Jackの写真" class="jack_image">
+ <div class="dice" id="jack_dice">1</div>
+ <!-- <img class="dice_img" src="" alt="jackのサイコロ"> -->
+ <div id="jackpoints">0ポイント</div>
+ </div>
+
+ <div class="player" id="Ann">
+ <h2>Ann</h2>
+ <img src="images/Ann3.png" alt="Annの写真" class="ann_image">
+ <div class="dice" id="ann_dice">1</div>
+ <!-- <img class="dice_img" src="" alt="annのサイコロ"> -->
+ <div id="annpoints">0ポイント</div>
+ </div>
+
+ </section>
+
+ </div>
+
+
+<!-- 勝敗やポイント数表示ゾーン -->
+<section class="result">
+<section id="result"><p>勝敗は？</p></section>
+<section id="getPoint">ポイント数は？</section>
+<section id="double"><p>連勝したら</p></section> 
+</section>
+
+<!-- スコアボード -->
+<section id="scoreBoard">
+ <h2>スコアボード</h2>
+<p id="userWins">あなたの勝利数:0</p>
+<p id="jackWins">Jackの勝利数:0</p>
+<p id="annWins">Annの勝利数:0</p>
+
+</section>
+
+<section id="final"><p>優勝者に祝福を</p></section>
+
+<button id="restart" style="display:none;">もう一度プレイする</button>
+
+<footer class="rules">
+<h2>ルール</h2>
+<p>10回限りの勝負です</p>
+<p>まず、ギャンブルボタンを押して、勝者の倍率を設定します</p>
+<p>次にサイコロボタンを押して出目の勝負をします</p>
+<p>一人勝ちした場合、倍率×出目のポイントを獲得できます</p>
+<p>２連勝すると、他人のポイントを全て奪うことができます</p>
+<p>10回勝負が終わった時に、一番ポイントの多い人が勝ちです</p>
+</footer>
+
+<!-- BGM設定 -->
+ <div class="musicbutton">
+  <audio id="bgm" src="./sound/As_you_wish.mp3" loop></audio>
+  <button onclick="toggleBGM()">BGM再生 / 停止</button>
+
+  </div>
+
+ </div>
+
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+
+// ステップ１　変数（定数？）の箱を作る
+// ドキュメントを全部読んでから始めてね
+$(document).ready(function(){
+
+// プレイヤーのポイント箱
+const userpoints ={ value: 0};
+const jackpoints ={ value: 0};
+const annpoints = { value: 0};
+
+// 勝利数
+const userWins = { value:0};
+const jackWins = { value:0};
+const annWins = { value:0};
+
+// 残り回数
+const remainingTurns ={ value:10};
+
+// 倍率候補
+const multipliers =[10,20,30,50,100];
+const currentMultiplier ={ value:0};
+
+// 前回の勝者（連勝判定用）
+const lastWinner ={ value:null};
+
+console.log("箱を用意しました",userpoints,jackpoints,annpoints,remainingTurns,multipliers,currentMultiplier,lastWinner);
+
+
+// ステップ２　ギャンブルボタンのロジック
+// 前提：multipliers,currentMultiplierはステップ１でconstで用意済み
+// 例）const multipliers = [10, 20, 30, 50, 100]; const currentMultiplier = { value: 0 };
+
+// １回しか押せないルールを守るためのフラグ
+const gambleUsed ={ value:false};
+
+const diceUsed = {value:false};
+// サイコロボタンのロックフラグ
+
+$("#Gbutton").on("click",function(){
+
+// すでに押されていたら、何もしない
+if (gambleUsed.value === true){
+    console.log("ギャンブルボタン使われてます");
+    return;
+}
+
+
+
+// ５つの定められた数字から選ぶためのランダムなインデックスを作る
+const randomRaw = Math.random();
+const scaled = randomRaw * multipliers.length;
+const randomIndex = Math.floor(scaled);
+// ０以上１未満の小数→０以上５未満の小数→０～４に確定
+console.log("ランダム生成の詳細",{
+    randomRaw,scaled,randomIndex,length:multipliers.length
+});
+
+// インデックスを使って配列から実際の倍率を取り出す
+const chosenMultiplier = multipliers[randomIndex];
+
+// 今回の倍率として記録
+currentMultiplier.value = chosenMultiplier;
+
+// 画面に倍率として表示
+$("#Gbutton_result").html(`<span class="pop_effect">今回の倍率は:${currentMultiplier.value}倍</span>`
+);
+
+// 倍率浮き上がる処理
+const resultEl = document.querySelector("#Gbutton_result span");
+resultEl.classList.remove("pop_effect");
+void resultEl.offsetWidth;
+resultEl.classList.add("pop_effect");
+
+// ★ ギャンブルボタンをロックする
+$("#Gbutton").prop("disabled", true);
+
+console.log ("倍率決定",{
+    index:randomIndex,
+    chosen:chosenMultiplier,
+    current: currentMultiplier.value
+});
+
+// このラウンドではギャンブルボタンをロック
+gambleUsed.value = true;
+
+// サイコロボタンを有効か
+$("#dice").prop("disabled",false);
+// サイコロボタンを解除
+diceUsed.value = false;
+
+
+});
+
+
+// ステップ３：サイコロボタンのロジック（最初は一つのネストだったがその後分割）
+$("#dice").on("click",function(){
+ 
+    //すでに押されてたら何もしない 
+ if(diceUsed.value === true){
+    console.log("サイコロボタン:使われてます")
+    return;
+ }
+$("#double").html("");
+// ラウンド開始時に総取りコメント消す
+
+startDiceAnimation();
+
+// サイコロボタンロック
+diceUsed.value = true;
+console.log("サイコロボタンロック:",diceUsed.value)
+
+// このタイミングでギャンブルボタンを再び押せるようにする
+gambleUsed.value = false;
+
+});
+
+// ステップ３を分割　タイマー処理関数をいれる
+function startDiceAnimation(){
+  
+const maxFrames =6;
+const frameDuration =500;
+const frameCount ={value : 0};
+
+const animationTimer = setInterval(function(){
+ const randUser = Math.floor(Math.random()*6)+1;
+ const randJack = Math.floor(Math.random()*6)+1;
+ const randAnn = Math.floor(Math.random()*6)+1;
+
+ $("#user_dice").html(`<img src="images/dice${randUser}.png">`);
+ $("#jack_dice").html(`<img src="images/dice${randJack}.png">`);
+ $("#ann_dice").html(`<img src="images/dice${randAnn}.png">`);
+
+ frameCount.value ++;
+
+if(frameCount.value >= maxFrames){
+  clearInterval(animationTimer);
+  finalizeDiceRolls();
+} 
+}, frameDuration);
+
+}
+  //ステップ３を分割　出目確定勝敗へ　１～６のランダムな整数を生成
+
+  function finalizeDiceRolls(){
+
+   const userRoll = Math.floor(Math.random()*6)+1;
+   const jackRoll = Math.floor(Math.random()*6)+1;
+   const annRoll = Math.floor(Math.random()*6)+1;
+  
+  //画面に出目(サイコロ画像と数字）を表示
+   $("#user_dice").html(`<img src="images/dice${userRoll}.png"><p>${userRoll}</p>`);
+   $("#jack_dice").html(`<img src="images/dice${jackRoll}.png"><p>${jackRoll}</p>`);
+   $("#ann_dice").html(`<img src="images/dice${annRoll}.png"><p>${annRoll}</p>`);
+  
+  // デバッグ用ログ
+  console.log("サイコロ出目:",{
+    user: userRoll,
+    jack: jackRoll,
+    ann: annRoll
+  });
+
+// 次のステップ（勝敗判定に渡す準備）
+// JudheWinner関数をあとで作るので、ここで呼び出す
+  judgeWinner(userRoll, jackRoll, annRoll);
+
+  }
+
+
+function judgeWinner(userRoll,jackRoll,annRoll){
+    const rolls ={user:userRoll,jack:jackRoll,ann:annRoll};
+    // 出目をまとめる
+
+    const maxRoll = Math.max(userRoll,jackRoll,annRoll);
+    // 最大値をまとめる
+
+    const winners = Object.keys(rolls).filter(player=> rolls[player]===maxRoll);
+    // 最大値を出したプレイヤーを抽出
+   
+    if(winners.length===1){
+        const winner = winners[0];
+        const pointsEarned = maxRoll*currentMultiplier.value;
+
+        // 勝者表示
+        $("#result").html(`<p>${winner}の勝ち！</p>`);
+        $("#getPoint").html(`<P>${pointsEarned}ポイント獲得！</p>`);
+        
+        console.log("勝者:",winner, "ポイント", pointsEarned);
+        
+        addPoints(winner,pointsEarned);
+        // ポイント加算（次ステップで関数化）
+             
+        // 勝利数加算
+          if(winner === "user") userWins.value++;
+          if(winner === "jack") jackWins.value++;
+          if(winner === "ann")  annWins.value++;
+
+        // 表示更新
+  // function  updatePoints(){
+  //  $("#userpoints").text(`${userpoints.value}ポイント`);
+  //  $("#jackpoints").text(`${jackpoints.value}ポイント`);
+  //  $("#annpoints").text(`${annpoints.value}ポイント`);
+  // };
+
+  updateWins();
+  // {
+  //   $("#userWins").text(`あなたの勝利数:${userWins.value}`);
+  //   $("#jackWins").text(`Jackの勝利数:${jackWins.value}`);
+  //   $("#annWins").text(`Annの勝利数:${annWins.value}`);
+  // };
+
+
+    if(lastWinner.value===winner){
+       checkDoubleWin(winner);
+    }   
+        lastWinner.value = winner;
+        // 連勝判定
+        // 勝者を記録
+
+    } else {
+    //勝者なしの場合 
+     $("#result").html(`<p>勝者なし！残念！</p>`);
+     $("#getPoint").html(`<p>ポイントなし</p>`);
+     console.log("勝者なし");
+     lastWinner.value = null;
+
+    }
+
+// ラウンド終了→残り回数を減らす
+
+if(remainingTurns.value>0){
+    remainingTurns.value--;
+}
+
+// remainingTurns.value--;
+$("#remainingTurns").text(`残り勝負回数:${remainingTurns.value}`);
+console.log("残り回数:", remainingTurns.value);
+
+// 残り回数が0ならゲーム終了へ
+if(remainingTurns.value ===0){
+    finalJudge();    
+}
+ // ★ ラウンド終了後に次ラウンド用のボタン状態をリセット
+   if(remainingTurns.value > 0){
+       $("#Gbutton").prop("disabled", false);   // ギャンブルボタンを再び有効化
+      //  $("#dice").prop("disabled", true);       // サイコロボタンは次のギャンブルまで無効化
+       gambleUsed.value = false;
+       diceUsed.value = true;
+   }
+
+}
+
+
+// ステップ５：ポイント加算と連勝判定、サイコロボタンのロック制御
+function updatePoints(){
+  $("#userpoints").text(`${userpoints.value}ポイント`);
+  $("#jackpoints").text(`${jackpoints.value}ポイント`);
+  $("#annpoints").text(`${annpoints.value}ポイント`);
+}
+
+function updateWins(){
+  $("#userWins").text(`あなたの勝利数:${userWins.value}`);
+  $("#jackWins").text(`Jackの勝利数:${jackWins.value}`);
+  $("#annWins").text(`Annの勝利数:${annWins.value}`);
+}
+
+
+function addPoints(winner,points){
+    if(winner==="user") userpoints.value += points;
+    if(winner==="jack") jackpoints.value += points;
+    if(winner==="ann") annpoints.value += points;
+   //ポイント加算関数 
+
+   $("#userpoints").text(`${userpoints.value}ポイント`);
+   $("#jackpoints").text(`${jackpoints.value}ポイント`);
+   $("#annpoints").text(`${annpoints.value}ポイント`);
+
+   console.log("ポイント加算:",{user:userpoints.value, jack:jackpoints.value, ann:annpoints.value});
+
+}
+
+// 連勝判定
+function checkDoubleWin(winner){
+    if(lastWinner.value ===winner){
+       if(winner==="user"){
+        userpoints.value +=jackpoints.value + annpoints.value;
+        jackpoints.value = 0;
+        annpoints.value = 0;
+       }  
+       if(winner==="jack"){
+        jackpoints.value +=userpoints.value + annpoints.value;
+        userpoints.value =0;
+        annpoints.value =0;
+       }
+       if(winner==="ann"){
+        annpoints.value +=userpoints.value + jackpoints.value;
+        userpoints.value = 0;
+        jackpoints.value = 0;
+       }
+      $("#double").html(`<p>${winner}が2連勝！ポイント総取り！</p>`);
+      console.log("総取り発動:",winner);
+
+      updatePoints();
+      //表示更新   
+    } 
+}
+
+// ステップ６　優勝者判定
+function finalJudge(){
+ const scores ={
+    あなた:userpoints.value,
+    Jack:jackpoints.value,
+    Ann:annpoints.value,
+ };
+// 各プレイヤーのスコアをまとめる
+
+const maxScore = Math.max(...Object.values(scores));
+// 最大ポイントを求める
+
+const winners = Object.keys(scores).filter(player=> scores[player]===maxScore);
+// 最大ポイントを持つプレイヤーを抽出
+
+if(winners.length===1){
+    $("#final").html(`<p>優勝者は${winners[0]}!おめでとう！</p>`);
+}else{
+    $("#final").html(`<p>優勝者は${winners.join("と")}！同点です！</p>`);
+ }
+
+// ボタンを無効化 
+$("#Gbutton").prop("disabled",true);
+$("#dice").prop("disabled",true);
+
+// 再スタートボタン表示
+$("#restart").show();
+
+}
+
+// 再スタートボタン処理定義
+$("#restart").on("click", function(){
+//  変数を初期化
+ userpoints.value =0;
+ jackpoints.value =0;
+ annpoints.value = 0;
+ userWins.value = 0;
+ jackWins.value = 0;
+ annWins.value = 0;
+ remainingTurns.value = 10;
+ lastWinner.value = null;
+ currentMultiplier.value = 0;
+
+  // 操作フラグも初期化
+  gambleUsed.value = false;
+  diceUsed.value = false;
+
+
+ // 表示を初期化
+ updatePoints();
+ updateWins();
+ $("#remainingTurns").text(`残り勝負回数:${remainingTurns.value}`);
+ $("#result").html("");
+ $("#getPoint").html("");
+ $("#double").html("");
+ $("#final").html("");
+ $("#Gbutton_result").html("");
+
+ $("#Gbutton").prop("disabled",false);
+ $("#dice").prop("disabled",false);
+
+ $("#restart").hide();
+
+})
+
+
+})
+
+
+
+
+
+</script>
+
+
+
+
+
+
+
+</html>
