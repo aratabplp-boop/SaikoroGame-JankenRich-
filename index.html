@@ -14,8 +14,7 @@
  <main>
  <!-- タイトルとロゴ -->
   <header class="title_section">
-    サイコロギャンブルバトル
-    <!-- 後でロゴ画像入れる -->
+   <img src="./images/Neon sign logo.png" alt="サイコロギャンブルバトルロゴ" class="logo">
   </header>
 
   <!-- スクロールメッセージ -->
@@ -65,7 +64,7 @@
  <div class="player" id="user">
  <h2>あなた</h2>
  <img src="images/User.png" alt="あなたの写真" class="user_image">
- <div class="dice" id="user_dice">1</div>
+ <div class="dice" id="user_dice"></div>
  <!-- <img class="dice_img" src="" alt="userのサイコロ"> -->
  <div id="userpoints">0ポイント</div>
  </div>
@@ -73,7 +72,7 @@
  <div class="player" id="Jack">
  <h2>Jack</h2>
  <img src="images/Jack.png" alt="Jackの写真" class="jack_image">
- <div class="dice" id="jack_dice">1</div>
+ <div class="dice" id="jack_dice"></div>
  <!-- <img class="dice_img" src="" alt="jackのサイコロ"> -->
  <div id="jackpoints">0ポイント</div>
  </div>
@@ -81,7 +80,7 @@
  <div class="player" id="Ann">
  <h2>Ann</h2>
  <img src="images/Ann3.png" alt="Annの写真" class="ann_image">
- <div class="dice" id="ann_dice">1</div>
+ <div class="dice" id="ann_dice"></div>
  <!-- <img class="dice_img" src="" alt="annのサイコロ"> -->
  <div id="annpoints">0ポイント</div>
  </div>
@@ -93,39 +92,60 @@
 
 <!-- 勝敗やポイント数表示ゾーン -->
 <section class="result">
-<section id="result"><p>勝敗は？</p></section>
-<section id="getPoint">ポイント数は？</section>
+  <div class="result_area">
+  <section id="result"><p>勝敗は？</p></section>
+  <section id="getPoint"><p>ポイント数は？</p></section>
+  </div>
 <section id="double"><p>連勝したら</p></section> 
 </section>
 
 <!-- スコアボード -->
+<section id="final"><p>優勝者に祝福を</p></section>
+
 <section id="scoreBoard">
- <h2>スコアボード</h2>
-<p id="userWins">あなたの勝利数:0</p>
+
+ <div class="scoreboard">
+  <div class="score_item">勝利数</div>
+  <!-- <span class="label">勝利数</span> -->
+   <!-- <h2>勝利数</h2> -->
+    <div class="score_item">
+    <span class="label">あなた</span>
+    <span id="userWins">0</span>
+    </div>
+    <div class="score_item">
+    <span class="label">Jack</span>
+    <span id="jackWins">0</span>
+   </div>
+    <div class="score_item">
+    <span class="label">Ann</span>
+    <span id="annWins">0</span>
+   </div>
+ </div>
+ <!-- <p id="userWins">あなたの勝利数:0</p>
 <p id="jackWins">Jackの勝利数:0</p>
-<p id="annWins">Annの勝利数:0</p>
+<p id="annWins">Annの勝利数:0</p> -->
 
 </section>
 
-<section id="final"><p>優勝者に祝福を</p></section>
+
 
 <button id="restart" style="display:none;">もう一度プレイする</button>
 
 <footer class="rules">
-<h2>ルール</h2>
+<!-- <p>ルール</p> -->
 <p>10回限りの勝負です</p>
 <p>まず、ギャンブルボタンを押して、勝者の倍率を設定します</p>
 <p>次にサイコロボタンを押して出目の勝負をします</p>
 <p>一人勝ちした場合、倍率×出目のポイントを獲得できます</p>
 <p>２連勝すると、他人のポイントを全て奪うことができます</p>
 <p>10回勝負が終わった時に、一番ポイントの多い人が勝ちです</p>
+<P>音楽：魔王魂</P>
 </footer>
 
 <!-- BGM設定 -->
  <div class="musicbutton">
-  <audio id="bgm" src="./sound/As_you_wish.mp3" loop></audio>
+  <audio id="bgm" src="./sound/maou_bgm_piano27.mp3" loop></audio>
   <button onclick="toggleBGM()">BGM再生 / 停止</button>
-
   </div>
 
  </div>
@@ -179,6 +199,8 @@ if (gambleUsed.value === true){
     return;
 }
 
+  // #result と #getPoint を一度非表示にする
+  $("#result, #getPoint").addClass("hidden");
 
 
 // ５つの定められた数字から選ぶためのランダムなインデックスを作る
@@ -321,6 +343,19 @@ function judgeWinner(userRoll,jackRoll,annRoll){
         
         console.log("勝者:",winner, "ポイント", pointsEarned);
         
+  // 結果を再表示
+  $("#result, #getPoint").removeClass("hidden");
+
+
+
+       // ポップエフェクト適用
+         const pointEl = document.getElementById("getPoint");
+         pointEl.classList.remove("pop_effect");
+         void pointEl.offsetWidth; // 再描画トリック
+         pointEl.classList.add("pop_effect");
+
+
+
         addPoints(winner,pointsEarned);
         // ポイント加算（次ステップで関数化）
              
@@ -393,9 +428,9 @@ function updatePoints(){
 }
 
 function updateWins(){
-  $("#userWins").text(`あなたの勝利数:${userWins.value}`);
-  $("#jackWins").text(`Jackの勝利数:${jackWins.value}`);
-  $("#annWins").text(`Annの勝利数:${annWins.value}`);
+  $("#userWins").text(`:${userWins.value}`);
+  $("#jackWins").text(`:${jackWins.value}`);
+  $("#annWins").text(`:${annWins.value}`);
 }
 
 
@@ -507,6 +542,14 @@ $("#restart").on("click", function(){
 
 })
 
+function toggleBGM() {
+  const bgm = document.getElementById("bgm");
+  if (bgm.paused) {
+    bgm.play();   // 再生
+  } else {
+    bgm.pause();  // 停止
+  }
+}
 
 
 
