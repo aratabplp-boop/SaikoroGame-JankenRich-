@@ -29,4 +29,5 @@ https://aratabplp-boop.github.io/SaikoroGame-JankenRich-/
 - 考慮漏れだった挙動は、確かサイコロボタンのオンオフ。各種挙動の後にどんな展開にしたいかまで事前に洗い出しておけるとベストだとの学び（もちろん、動かしてみてアイデアが広がることもあるけれど）
 - Gemini3.0 がリリースされたので相談相手として試してみた。GitHubについてのQAはとてもわかりやすいが、コード書いていくのはレベル感を合わせるのが難しい印象。copilotのsmart(GPT-5)がBuddyとしてちょうどよい・・・
 
-![top page capture](./src/capture1.png)
+![top page capture](./src/screencapture-.png)
+
